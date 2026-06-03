@@ -18,18 +18,19 @@ response=$($CURL -k --silent -X POST https://api.dropboxapi.com/2/files/list_fol
     --header "Content-Type: application/json" \
     --data '{"path": "","include_non_downloadable_files": false}')
 echo "$response" |
-sed -e 's/^.*\[{//' -e 's/}\].*$//' -e 's/}, {/\n/g' |
-grep '".tag": "file"' | grep '"is_downloadable": true' |
+sed -e 's/^.*\[{//' -e 's/}\].*$//' -e 's/},[[:space:]]*{/\n/g' |
+grep -E '"\.tag":[[:space:]]*"file"' | 
+grep -E '"is_downloadable":[[:space:]]*true' |
 while read item
 do
-  outFileName=`echo $item | sed -e 's/.*"name": "\([^"]*\)", ".*/\1/'`
+  outFileName=`echo $item | sed -e 's/.*"name":[[:space:]]*"\([^"]*\)",[[:space:]]*".*/\1/'`
   outFileName=`echo $outFileName | sed -e 's/\\u00e0/à/' -e 's/\\u00e0/â/' -e 's/\\u00e8/è/' -e 's/\\u00e9/é/' -e 's/\\u00f8/ø/' -e 's/\\u0153/œ/' -e 's/\\u2014/—/'`
-  outFileSize=`echo $item | sed -e 's/.*"size": \([0-9]*\), ".*/\1/'`
+  outFileSize=`echo $item | sed -e 's/.*"size":[[:space:]]*\([0-9][0-9]*\).*/\1/'`
   existingFileSize=`stat -c %s "$outDir/$outFileName" 2>/dev/null`
   if [ -z "$existingFileSize" ]; then
     existingFileSize=0
   fi
-  remotePath=`echo $item | sed 's/.*"id": "\([^"]*\)", ".*/\1/'`
+  remotePath=`echo $item | sed 's/.*"id":[[:space:]]*"\([^"]*\)",[[:space:]]*".*/\1/'`
   localFile="$outDir/$outFileName"
 
   echo "outFileName: $outFileName"
