@@ -26,7 +26,7 @@ then
     while [ $r != 0 ]; do
     if [ $i -gt 60 ]; then
         ping -c 1 -w 3 aws.amazon.com >/dev/null 2>&1
-        echo "`$Dt` error! no connection detected" 
+        echo "`$Dt` error! no connection detected"
         exit 1
     fi
     ping -c 1 -w 3 aws.amazon.com >/dev/null 2>&1
@@ -44,7 +44,19 @@ then
       echo "NickelDBus found"
   else
       echo "NickelDBus not found: installing it!"
-      $CURL -k -L "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" | tar xz -C /
+      wget "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" -O - | tar xz -C /
+  fi
+  if [ -f "${RCLONE}" ]
+  then
+      echo "rclone found"
+  else
+      echo "rclone not found: installing it!"
+      mkdir -p "${RCLONEDIR}"
+      rcloneTemp="${RCLONEDIR}/rclone.tmp.zip"
+      rm -f "${rcloneTemp}"
+      wget "https://github.com/rclone/rclone/releases/download/v1.64.0/rclone-v1.64.0-linux-arm-v7.zip" -O "${rcloneTemp}"
+      unzip -p "${rcloneTemp}" rclone-v1.64.0-linux-arm-v7/rclone > ${RCLONE}
+      rm -f "${rcloneTemp}"
   fi
 fi
 
@@ -55,55 +67,27 @@ echo "$lib_list_before"
 
 
 while read url || [ -n "$url" ]; do
-  echo "Reading $url"
   if echo "$url" | grep -q '^#'; then
-    echo "Comment found"
+    continue
   elif echo "$url" | grep -q "^REMOVE_DELETED$"; then
-	  echo "Will match remote"
-  elif echo "$url" | grep -q "^NO_CURL_VERBOSE$"; then
-	  echo "Will have no verbose for curl"
-  else
+	  echo "Will delete files no longer present on remote"
+  elif [ -n "$url" ]; then
     echo "Getting $url"
-    if echo $url | grep -q '^https*://www.dropbox.com'; then # dropbox link?
-      $KC_HOME/getDropboxFiles.sh "$url" "$Lib"
-    elif echo $url | grep -q '^DropboxApp:'; then # dropbox token
-      auth=`echo $url | sed -e 's/^DropboxApp://' -e 's/[[:space:]]*$//'`
-      client_id=`echo $auth | sed 's/:.*//'`
-      refresh_token=`echo $auth | sed 's/.*://'`
-      $KC_HOME/getDropboxAppFiles.sh "$client_id" "$refresh_token" "$Lib"
-    elif echo $url | grep -q '^https*://filedn.com\|^https*://filedn.eu\|^https*://[^/]*pcloud'; then
-      $KC_HOME/getpCloudFiles.sh "$url" "$Lib"
-    elif echo $url | grep -q '^https*://drive.google.com'; then
-      $KC_HOME/getGDriveFiles.sh "$url" "$Lib"
-    elif echo $url | grep -q '^https*://app.box.com'; then
-      $KC_HOME/getBoxFiles.sh "$url" "$Lib"
+    command=""
+    if grep -q "^REMOVE_DELETED$" $UserConfig; then
+      # Remove deleted, do a sync.
+      command="sync"
     else
-      $KC_HOME/getOwncloudFiles.sh "$url" "$Lib"
+      # Don't remove deleted, do a copy.
+      command="copy"
     fi
+    remote=$(echo "$url" | cut -d: -f1)
+    dir="$Lib/$remote/"
+    mkdir -p "$dir"
+    echo ${RCLONE} ${command} --no-check-certificate -v --config ${RCloneConfig} \"$url\" \"$dir\"
+    ${RCLONE} ${command} --no-check-certificate -v --config ${RCloneConfig} "$url" "$dir"
   fi
 done < $UserConfig
-
-recursiveUpdateFiles() {
-for item in *; do
-  if [ "$item" = "*" ]; then
-    continue
-  fi
-	if [ -d "$item" ]; then 
-		(cd -- "$item" && recursiveUpdateFiles)
-	elif grep -Fq "$item" "$Lib/filesList.log"; then
-		echo "$item found"
-	else
-		echo "$item not found, deleting"
-		rm "$item"
-	fi
-done
-}
-
-if grep -q "^REMOVE_DELETED$" $UserConfig; then
-	cd "$Lib"
-	echo "Matching remote server"
-	recursiveUpdateFiles
-fi
 
 #list file in lib dir after sync
 echo "New Library list"
@@ -116,7 +100,6 @@ then
   echo "No Library Change. skipping rescan"
 else
   echo "Library has changed, rescan needed"
-
 
   if [ "$TEST" = "" ]
   then
