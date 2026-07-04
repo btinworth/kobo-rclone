@@ -3,6 +3,8 @@
 
 TEST=$1
 
+RCLONE_VERSION="1.74.3"
+
 #load config
 . $(dirname $0)/config.sh
 export UserConfig
@@ -54,8 +56,8 @@ then
       mkdir -p "${RCLONEDIR}"
       rcloneTemp="${RCLONEDIR}/rclone.tmp.zip"
       rm -f "${rcloneTemp}"
-      wget "https://github.com/rclone/rclone/releases/download/v1.64.0/rclone-v1.64.0-linux-arm-v7.zip" -O "${rcloneTemp}"
-      unzip -p "${rcloneTemp}" rclone-v1.64.0-linux-arm-v7/rclone > ${RCLONE}
+      wget "https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/rclone-v${RCLONE_VERSION}-linux-arm-v7.zip" -O "${rcloneTemp}"
+      unzip -p "${rcloneTemp}" rclone-v${RCLONE_VERSION}-linux-arm-v7/rclone > ${RCLONE}
       rm -f "${rcloneTemp}"
   fi
 fi
