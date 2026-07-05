@@ -1,0 +1,4 @@
+KERNEL=="eth*", ACTION=="add", RUN+="/usr/local/koborclone/udev_program.sh"
+KERNEL=="wlan*", ACTION=="add", RUN+="/usr/local/koborclone/udev_program.sh"
+KERNEL=="lo", RUN+="/usr/local/koborclone/udev_mount.sh"
+

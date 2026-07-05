@@ -1,4 +1,4 @@
-name: Build KoboCloud
+name: Build KoboRclone
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   job:
-    name: Build KoboCloud
+    name: Build KoboRclone
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

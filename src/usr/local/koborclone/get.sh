@@ -1,5 +1,5 @@
 #!/bin/sh
-# Kobocloud getter
+# KoboRclone getter
 
 RCLONE_VERSION="1.74.3"
 
@@ -7,9 +7,9 @@ RCLONE_VERSION="1.74.3"
 . $(dirname $0)/config.sh
 export USER_CONFIG
 
-# check if Kobocloud contains the line "UNINSTALL"
+# check if KoboRclone contains the line "UNINSTALL"
 if grep -q '^UNINSTALL$' $USER_CONFIG; then
-    echo "Uninstalling KoboCloud!"
+  echo "Uninstalling KoboRclone!"
     $KC_HOME/uninstall.sh
     exit 0
 fi
