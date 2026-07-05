@@ -33,27 +33,24 @@ while [ $r != 0 ]; do
 done
 
 # check for qbdb
-if [ "$PLATFORM" = "Kobo" ]
+if [ -f "/usr/bin/qndb" ]
 then
-  if [ -f "/usr/bin/qndb" ]
-  then
-      echo "NickelDBus found"
-  else
-      echo "NickelDBus not found: installing it!"
-      wget "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" -O - | tar xz -C /
-  fi
-  if [ -f "${RCLONE}" ]
-  then
-      echo "rclone found"
-  else
-      echo "rclone not found: installing it!"
-      mkdir -p "${RCLONEDIR}"
-      rcloneTemp="${RCLONEDIR}/rclone.tmp.zip"
-      rm -f "${rcloneTemp}"
-      wget "https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/rclone-v${RCLONE_VERSION}-linux-arm-v7.zip" -O "${rcloneTemp}"
-      unzip -p "${rcloneTemp}" rclone-v${RCLONE_VERSION}-linux-arm-v7/rclone > ${RCLONE}
-      rm -f "${rcloneTemp}"
-  fi
+  echo "NickelDBus found"
+else
+  echo "NickelDBus not found: installing it!"
+  wget "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" -O - | tar xz -C /
+fi
+if [ -f "${RCLONE}" ]
+then
+  echo "rclone found"
+else
+  echo "rclone not found: installing it!"
+  mkdir -p "${RCLONEDIR}"
+  rcloneTemp="${RCLONEDIR}/rclone.tmp.zip"
+  rm -f "${rcloneTemp}"
+  wget "https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/rclone-v${RCLONE_VERSION}-linux-arm-v7.zip" -O "${rcloneTemp}"
+  unzip -p "${rcloneTemp}" rclone-v${RCLONE_VERSION}-linux-arm-v7/rclone > ${RCLONE}
+  rm -f "${rcloneTemp}"
 fi
 
 #list file in lib dir before sync (name and size only, matching --size-only)

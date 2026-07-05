@@ -11,4 +11,3 @@ RCloneConfig=/mnt/onboard/.add/kobocloud/rclone.conf
 Dt="date +%Y-%m-%d_%H:%M:%S"
 RCLONEDIR="/mnt/onboard/.add/kobocloud/bin/"
 RCLONE="${RCLONEDIR}rclone"
-PLATFORM=Kobo
