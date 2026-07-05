@@ -11,10 +11,6 @@ if grep -q '^UNINSTALL$' "$USER_CONFIG"; then
   exit 0
 fi
 
-if grep -q "^REMOVE_DELETED$" "$USER_CONFIG"; then
-  echo "$LIB/filesList.log" > "$LIB/filesList.log"
-fi
-
 # check internet connection
 echo "$($DT) waiting for internet connection"
 r=1
@@ -51,28 +47,21 @@ lib_list_before=$(find "$LIB" -type f ! -name "*.log" -exec stat -c '%s %n' {} \
 echo "Current Library list"
 echo "$lib_list_before"
 
-if grep -q "^REMOVE_DELETED$" "$USER_CONFIG"; then
-  command="sync" # remove deleted, do a sync
-else
-  command="copy" # don't remove deleted, do a copy
-fi
-
 while IFS= read -r url || [ -n "$url" ]; do
   if echo "$url" | grep -q '^#'; then
     continue
-  elif echo "$url" | grep -q "^REMOVE_DELETED$"; then
-    echo "Will delete files no longer present on remote"
   elif [ -n "$url" ]; then
-    echo "Getting $url"
-    remote=$(echo "$url" | cut -d: -f1)
-    dir="$LIB/$remote/"
-    mkdir -p "$dir"
     if pgrep -x rclone >/dev/null 2>&1; then
       echo "Another rclone process is already running. Exiting."
       exit 0
     fi
-    printf 'Running: %s %s --no-check-certificate --size-only -v --config %s "%s" "%s"\n' "$RCLONE" "$command" "$RCLONE_CONFIG" "$url" "$dir"
-    "$RCLONE" "$command" --no-check-certificate --size-only -v --config "$RCLONE_CONFIG" "$url" "$dir"
+
+    remote=$(echo "$url" | cut -d: -f1)
+    dir="$LIB/$remote/"
+    mkdir -p "$dir"
+
+    printf 'Running: %s copy --no-check-certificate --size-only -v --config %s "%s" "%s"\n' "$RCLONE" "$RCLONE_CONFIG" "$url" "$dir"
+    "$RCLONE" copy --no-check-certificate --size-only -v --config "$RCLONE_CONFIG" "$url" "$dir"
   fi
 done < "$USER_CONFIG"
 
