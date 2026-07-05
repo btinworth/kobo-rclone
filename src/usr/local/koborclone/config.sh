@@ -1,7 +1,8 @@
 #!/bin/sh
 
 KC_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-CONFIG_FILE="$KC_HOME/koborclone.conf.tmpl"
+CONFIG_TEMPLATE="$KC_HOME/koborclone.conf.tmpl"
+RCLONE_CONFIG_TEMPLATE="$KC_HOME/rclone.conf.tmpl"
 
 LOGS=/mnt/onboard/.add/koborclone
 LIB=/mnt/onboard/.add/koborclone/Library
