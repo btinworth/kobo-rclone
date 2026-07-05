@@ -9,5 +9,4 @@ SD=/mnt/sd/koborclone
 USER_CONFIG=/mnt/onboard/.add/koborclone/koborclonerc
 DT="date +%Y-%m-%d_%H:%M:%S"
 RCLONE_CONFIG=/mnt/onboard/.add/koborclone/rclone.conf
-RCLONE_DIR="/mnt/onboard/.add/koborclone/bin/"
-RCLONE="${RCLONE_DIR}rclone"
+RCLONE="${KC_HOME}/bin/rclone"

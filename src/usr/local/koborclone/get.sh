@@ -1,8 +1,6 @@
 #!/bin/sh
 # KoboRclone getter
 
-RCLONE_VERSION="1.74.3"
-
 # load config
 . $(dirname $0)/config.sh
 export USER_CONFIG
@@ -40,17 +38,12 @@ else
   echo "NickelDBus not found: installing it!"
   wget "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" -O - | tar xz -C /
 fi
-if [ -f "${RCLONE}" ]
+
+# check for rclone
+if [ ! -x "${RCLONE}" ]
 then
-  echo "rclone found"
-else
-  echo "rclone not found: installing it!"
-  mkdir -p "${RCLONE_DIR}"
-  rcloneTemp="${RCLONE_DIR}/rclone.tmp.zip"
-  rm -f "${rcloneTemp}"
-  wget "https://github.com/rclone/rclone/releases/download/v${RCLONE_VERSION}/rclone-v${RCLONE_VERSION}-linux-arm-v7.zip" -O "${rcloneTemp}"
-  unzip -p "${rcloneTemp}" rclone-v${RCLONE_VERSION}-linux-arm-v7/rclone > ${RCLONE}
-  rm -f "${rcloneTemp}"
+  echo "rclone missing: binary at ${RCLONE}"
+  exit 1
 fi
 
 # list file in lib dir before sync (name and size only, matching --size-only)

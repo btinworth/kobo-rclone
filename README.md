@@ -38,6 +38,8 @@ After the installation process:
     - Run `rclone config file` on your computer to find the file.
 5. Edit the configuration file located at `.add/koborclone/koborclonerc`, and add each remote:directory pair (one per line).
 
+KoboRclone ships with a bundled rclone binary at `/usr/local/koborclone/bin/rclone` on device. This binary is downloaded by `makeKoboRoot.sh` during packaging.
+
 ## Configuration example
 
 (Note: this is after going through the configuraton steps above)
@@ -90,6 +92,7 @@ To install KoboRclone from source code:
 ### Compiling
 
 - Move to the project directory root
+- `makeKoboRoot.sh` downloads the latest Linux ARMv7 rclone release and places it at `src/usr/local/koborclone/bin/rclone` before building the archive.
 - Open the configuration file located at `src/usr/local/koborclone/koborclonerc.tmpl`
 - Add the links to the cloud services (see the configuration example that follow below)
 - Run `sh ./makeKoboRoot.sh`
