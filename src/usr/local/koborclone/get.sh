@@ -67,6 +67,10 @@ while IFS= read -r url || [ -n "$url" ]; do
     remote=$(echo "$url" | cut -d: -f1)
     dir="$LIB/$remote/"
     mkdir -p "$dir"
+    if pgrep -x rclone >/dev/null 2>&1; then
+      echo "Another rclone process is already running. Exiting."
+      exit 0
+    fi
     printf 'Running: %s %s --no-check-certificate --size-only -v --config %s "%s" "%s"\n' "$RCLONE" "$command" "$RCLONE_CONFIG" "$url" "$dir"
     "$RCLONE" "$command" --no-check-certificate --size-only -v --config "$RCLONE_CONFIG" "$url" "$dir"
   fi
