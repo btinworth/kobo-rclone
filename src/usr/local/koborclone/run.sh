@@ -36,6 +36,14 @@ if grep -q '^UNINSTALL$' "$USER_CONFIG"; then
   exit 0
 fi
 
+# check if user config contains the line "SYNC" to remove books that no
+# longer exist on the sync source
+if grep -q '^SYNC$' "$USER_CONFIG"; then
+  rclone_command=sync
+else
+  rclone_command=copy
+fi
+
 # check internet connection
 echo "$($DT) Checking internet connection"
 ping_exit_code=1
@@ -78,13 +86,15 @@ while IFS= read -r url || [ -n "$url" ]; do
     continue # ignore blank/whitespace-only lines
   elif echo "$url" | grep -q '^#'; then
     continue # ignore comment lines
+  elif [ "$url" = "SYNC" ] || [ "$url" = "UNINSTALL" ]; then
+    continue # ignore directive lines
   elif [ -n "$url" ]; then
     dir="$LIB/$(printf '%s' "$url" | sed 's/:/\//g')"
     mkdir -p "$dir"
 
     files_before=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
 
-    "$RCLONE" copy \
+    "$RCLONE" "$rclone_command" \
       --no-check-certificate \
       --size-only \
       --transfers 1 \

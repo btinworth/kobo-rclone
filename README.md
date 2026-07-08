@@ -17,6 +17,16 @@ Pulls eBooks from the cloud to your Kobo library using [rclone](https://rclone.o
    Dropbox:ebooks
    ```
 
+6. Optionally, add a `SYNC` line to `.adds/koborclone/koborclone.conf` to have
+   books removed from your Kobo when they're deleted from the sync source
+   (uses `rclone sync` instead of `rclone copy`):
+
+   ```conf
+   SYNC
+   GoogleDrive:Books
+   Dropbox:ebooks
+   ```
+
 ## Acknowledgements
 
 * Based on [KoboClone](https://github.com/fsantini/KoboCloud) by fsantini
