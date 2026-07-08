@@ -59,7 +59,7 @@ done
 # check for qbdb
 if [ ! -f "/usr/bin/qndb" ]; then
   echo "NickelDBus not found, installing..."
-  wget "https://github.com/shermp/NickelDBus/releases/download/0.2.0/KoboRoot.tgz" -O - | tar xz -C /
+  wget "https://github.com/shermp/NickelDBus/releases/latest/download/KoboRoot.tgz" -O - | tar xz -C /
 fi
 
 # check for rclone
