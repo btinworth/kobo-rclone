@@ -81,15 +81,22 @@ while IFS= read -r url || [ -n "$url" ]; do
 
   files_before=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
 
+  echo "$($DT) Syncing $url"
   "$RCLONE" copy \
     --ca-cert "$KOBORCLONE_DIR/cacert.pem" \
     --size-only \
     --transfers 1 \
     --cache-dir "$RCLONE_CACHE_DIR" \
-    --log-level NOTICE \
+    --log-level INFO \
     --stats 0 \
     --config "$RCLONE_CONFIG" \
     "$url" "$dir"
+
+  rclone_exit=$?
+  if [ "$rclone_exit" -ne 0 ]; then
+    echo "$($DT) ERROR: rclone failed for $url (exit code $rclone_exit)"
+    continue
+  fi
 
   files_after=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
   if [ "$files_before" != "$files_after" ]; then
