@@ -72,30 +72,28 @@ changes=false
 
 # loop through each line in the user config file
 while IFS= read -r url || [ -n "$url" ]; do
-  if echo "$url" | grep -q '^[[:space:]]*$'; then
-    continue # ignore blank/whitespace-only lines
-  elif echo "$url" | grep -q '^#'; then
-    continue # ignore comment lines
-  elif [ -n "$url" ]; then
-    dir="$LIB/$(printf '%s' "$url" | sed 's/:/\//g')"
-    mkdir -p "$dir"
+  url="${url#"${url%%[! ]*}"}"
+  case "$url" in
+    ''|'#'*) continue ;; # skip empty lines and comments
+  esac
+  dir="$LIB/$(printf '%s' "$url" | sed 's/:/\//g')"
+  mkdir -p "$dir"
 
-    files_before=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
+  files_before=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
 
-    "$RCLONE" copy \
-      --ca-cert "$KOBORCLONE_DIR/cacert.pem" \
-      --size-only \
-      --transfers 1 \
-      --cache-dir "$RCLONE_CACHE_DIR" \
-      --log-level NOTICE \
-      --stats 0 \
-      --config "$RCLONE_CONFIG" \
-      "$url" "$dir"
+  "$RCLONE" copy \
+    --ca-cert "$KOBORCLONE_DIR/cacert.pem" \
+    --size-only \
+    --transfers 1 \
+    --cache-dir "$RCLONE_CACHE_DIR" \
+    --log-level NOTICE \
+    --stats 0 \
+    --config "$RCLONE_CONFIG" \
+    "$url" "$dir"
 
-    files_after=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
-    if [ "$files_before" != "$files_after" ]; then
-      changes=true
-    fi
+  files_after=$(find "$dir" -type f -exec stat -c '%s %n' {} \; | sort)
+  if [ "$files_before" != "$files_after" ]; then
+    changes=true
   fi
 done < "$USER_CONFIG"
 
