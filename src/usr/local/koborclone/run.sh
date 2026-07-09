@@ -1,11 +1,13 @@
 #!/bin/sh
 
 # prevent concurrent runs
-LOCKFILE="/tmp/koborclone.lock"
-exec 9>"$LOCKFILE"
-if ! flock -n 9; then
-  echo "Another instance is already running. Exiting."
-  exit 0
+if command -v flock >/dev/null 2>&1; then
+  LOCKFILE="/tmp/koborclone.lock"
+  exec 9>"$LOCKFILE"
+  if ! flock -n 9; then
+    echo "Another instance is already running. Exiting."
+    exit 0
+  fi
 fi
 
 # load config
@@ -42,7 +44,7 @@ fi
 
 # check internet connection
 retries=0
-while ! wget -q --spider "http://detectportal.firefox.com/success.txt" 2>/dev/null; do
+while ! wget -q -O /dev/null "http://detectportal.firefox.com/success.txt" 2>/dev/null; do
   echo "$($DT) Waiting for internet connection, retry $retries"
   retries=$((retries + 1))
   if [ "$retries" -gt 60 ]; then
