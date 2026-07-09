@@ -80,7 +80,6 @@ while IFS= read -r url || [ -n "$url" ]; do
   echo "$($DT) Syncing $url"
   "$RCLONE" copy \
     --ca-cert "$KOBORCLONE_DIR/cacert.pem" \
-    --size-only \
     --transfers 1 \
     --cache-dir "$RCLONE_CACHE_DIR" \
     --log-level INFO \
