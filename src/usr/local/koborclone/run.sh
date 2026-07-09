@@ -23,7 +23,7 @@ if [ ! -e "$USER_CONFIG" ]; then
   if [ -e "$USER_CONFIG_TEMPLATE" ]; then
     cp "$USER_CONFIG_TEMPLATE" "$USER_CONFIG"
   else
-    : > "$USER_CONFIG"
+    echo '{"libraries":[]}' > "$USER_CONFIG"
   fi
 fi
 
@@ -71,18 +71,31 @@ if [ ! -x "${RCLONE}" ]; then
   exit 1
 fi
 
-changes=false
+# check for jq
+if [ ! -x "${JQ}" ]; then
+  echo "jq missing: binary at ${JQ}"
+  exit 1
+fi
 
-# loop through each line in the user config file
-while IFS= read -r url || [ -n "$url" ]; do
-  url="${url#"${url%%[! ]*}"}"
-  case "$url" in
-    ''|'#'*) continue ;; # skip empty lines and comments
-  esac
-  dir="$LIBRARY_DIR/$(printf '%s' "$url" | sed 's/:/\//g')"
+changes=false
+TAB=$(printf '\t')
+
+# read the libraries (source + destination) from the JSON config
+if ! libraries=$("$JQ" -r '.libraries[]? | [.source, .destination] | @tsv' "$USER_CONFIG"); then
+  echo "$($DT) ERROR: could not parse $USER_CONFIG"
+  exit 1
+fi
+
+# sync each library from its source into its destination under the library dir
+while IFS="$TAB" read -r source destination || [ -n "$source" ]; do
+  [ -n "$source" ] || continue
+  if [ -z "$destination" ]; then
+    echo "$($DT) WARNING: no destination for $source, using library root"
+  fi
+  dir="$LIBRARY_DIR/$destination"
   mkdir -p "$dir"
 
-  echo "$($DT) Syncing $url"
+  echo "$($DT) Syncing $source -> $dir"
   "$RCLONE" copy \
     --ca-cert "$KOBORCLONE_DIR/cacert.pem" \
     --transfers 1 \
@@ -91,15 +104,17 @@ while IFS= read -r url || [ -n "$url" ]; do
     --error-on-no-transfer \
     --stats 0 \
     --config "$RCLONE_CONFIG" \
-    "$url" "$dir"
+    "$source" "$dir"
   rclone_exit=$?
 
   case "$rclone_exit" in
     0) changes=true ;;  # files were transferred
     9) ;;               # nothing transferred
-    *) echo "$($DT) ERROR: rclone failed for $url (exit code $rclone_exit)" ;;
+    *) echo "$($DT) ERROR: rclone failed for $source (exit code $rclone_exit)" ;;
   esac
-done < "$USER_CONFIG"
+done <<EOF
+$libraries
+EOF
 
 # refresh library if required
 if [ "$changes" = false ]; then

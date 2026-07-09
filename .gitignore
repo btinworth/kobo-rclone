@@ -1,6 +1,7 @@
 KoboRoot.tgz
-koborclone.conf
+koborclone.json
 src/usr/local/koborclone/rclone
 src/usr/local/koborclone/rclone-*.zip
 src/usr/local/koborclone/cacert.pem
+src/usr/local/koborclone/jq
 .DS_Store

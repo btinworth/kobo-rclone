@@ -45,4 +45,20 @@ if [ "$EXPECTED_CACERT_SHA256" != "$ACTUAL_CACERT_SHA256" ]; then
   exit 1
 fi
 
+# download jq (static arm hard-float build, matches the rclone arm-v7 target)
+JQ_PATH="$KOBORCLONE_DIR/jq"
+curl -fsSL "https://github.com/jqlang/jq/releases/latest/download/jq-linux-armhf" -o "$JQ_PATH"
+
+# verify jq checksum
+EXPECTED_JQ_SHA256=$(curl -fsSL "https://github.com/jqlang/jq/releases/latest/download/sha256sum.txt" | grep 'jq-linux-armhf$' | awk '{print $1}')
+ACTUAL_JQ_SHA256=$(shasum -a 256 "$JQ_PATH" | awk '{print $1}')
+if [ "$EXPECTED_JQ_SHA256" != "$ACTUAL_JQ_SHA256" ]; then
+  echo "Checksum mismatch for jq-linux-armhf"
+  echo "  expected: $EXPECTED_JQ_SHA256"
+  echo "  got:      $ACTUAL_JQ_SHA256"
+  rm -f "$JQ_PATH"
+  exit 1
+fi
+chmod +x "$JQ_PATH"
+
 tar -cvzf KoboRoot.tgz -C src etc usr

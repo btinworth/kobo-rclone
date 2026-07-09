@@ -10,11 +10,21 @@ Pulls eBooks from the cloud to your Kobo library using [rclone](https://rclone.o
 3. Reboot the Kobo.
 4. Create your rclone config on your computer (`rclone config`) and copy it to:
    `.adds/koborclone/rclone.conf`
-5. Edit `.adds/koborclone/koborclone.conf` and add one remote path per line, for example:
+5. Edit `.adds/koborclone/koborclone.json` and list each remote to sync (`source`) and the folder to sync it into (`destination`, relative to your library root), for example:
 
-   ```conf
-   GoogleDrive:Books
-   Dropbox:ebooks
+   ```json
+   {
+     "libraries": [
+       {
+         "source": "GoogleDrive:eBooks",
+         "destination": "GDrive Books"
+       },
+       {
+         "source": "Dropbox:ebooks",
+         "destination": "ebooks"
+       }
+     ]
+   }
    ```
 
 ## Uninstall
